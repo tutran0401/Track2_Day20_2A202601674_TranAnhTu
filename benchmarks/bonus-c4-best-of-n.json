@@ -1,0 +1,49 @@
+{
+  "single": {
+    "seed": 0,
+    "latency_ms": 3161.3,
+    "correct": false,
+    "score": -3.21,
+    "answer": "The total number of books is calculated by adding the books on each shelf to the new batch: (6 shelves \u00d7 7 books/shelf) + 5 new books = 42 + 5 = 47.\nFINAL=47"
+  },
+  "single_wall_ms": 3161.3,
+  "best_of_4": [
+    {
+      "seed": 1,
+      "latency_ms": 5124.7,
+      "correct": false,
+      "score": -3.21,
+      "answer": "Each shelf holds 7 books, and with 6 shelves, the initial total is $6 \\times 7 = 42$ books. After receiving 5 new books, the total becomes $42 + 5 = 47$.\nFINAL=47"
+    },
+    {
+      "seed": 2,
+      "latency_ms": 4249.3,
+      "correct": false,
+      "score": -2.95,
+      "answer": "A shop sells 9 books and then receives 5 new books, resulting in a total of $9 + 5 = 14$ books.\n\nFINAL=14"
+    },
+    {
+      "seed": 3,
+      "latency_ms": 4429.4,
+      "correct": false,
+      "score": -1.45,
+      "answer": "A shop initially holds 42 books (6 shelves \u00d7 7 books per shelf), then adds 5 new ones, resulting in 47 total books sold. FINAL=47"
+    },
+    {
+      "seed": 4,
+      "latency_ms": 4535.4,
+      "correct": false,
+      "score": -1.41,
+      "answer": "This shop sells 15 books total initially (6 shelves \u00d7 7 books) and then adds 5 more, resulting in a combined inventory of 20 books.\n\nFINAL=20"
+    }
+  ],
+  "batch_wall_ms": 5128.1,
+  "winner": {
+    "seed": 4,
+    "latency_ms": 4535.4,
+    "correct": false,
+    "score": -1.41,
+    "answer": "This shop sells 15 books total initially (6 shelves \u00d7 7 books) and then adds 5 more, resulting in a combined inventory of 20 books.\n\nFINAL=20"
+  },
+  "accepted": null
+}

@@ -500,10 +500,36 @@ def bench_all_pp(output: str) -> list[tuple[int, float]]:
 
 def run_bench(args: list[str], timeout: int = 1800) -> str:
     bin_path = runtime_bin("llama-bench")
+    bench_args = list(args)
+    if os.name == "nt":
+        # llama-bench b10488 converts argv to the active Windows code page and
+        # cannot reopen a model whose path contains characters such as "á".
+        # Use the filesystem's ASCII 8.3 alias for existing path arguments.
+        import ctypes
+
+        get_short_path = ctypes.windll.kernel32.GetShortPathNameW
+        for i, arg in enumerate(bench_args):
+            if not Path(arg).exists():
+                continue
+            size = get_short_path(arg, None, 0)
+            if size:
+                buf = ctypes.create_unicode_buffer(size)
+                if get_short_path(arg, buf, size):
+                    bench_args[i] = buf.value
     proc = subprocess.run(
-        [str(bin_path)] + args, capture_output=True, text=True, check=False, timeout=timeout
+        [str(bin_path)] + bench_args,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+        timeout=timeout,
     )
-    return proc.stdout + proc.stderr
+    # On Windows, native backends can write a mixture of UTF-8 diagnostics and
+    # bytes encoded with the active ANSI code page (notably when the repo path
+    # contains non-ASCII characters).  Replacement keeps the ASCII benchmark
+    # table parseable instead of letting the subprocess reader thread crash.
+    return (proc.stdout or "") + (proc.stderr or "")
 
 
 # ─────────────────────────────────────────────────────────── reports

@@ -16,12 +16,27 @@ lab -- which is why the bonus track favours weaker hardware.
 from __future__ import annotations
 
 import argparse
+import os
 import pathlib
 import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "lib"))
 import labkit  # noqa: E402
+
+
+def native_path(path: str) -> str:
+    """Use an ASCII argv path for llama-bench on Windows build b10488."""
+    if os.name != "nt" or not pathlib.Path(path).exists():
+        return path
+    import ctypes
+
+    get_short_path = ctypes.windll.kernel32.GetShortPathNameW
+    size = get_short_path(path, None, 0)
+    if not size:
+        return path
+    buf = ctypes.create_unicode_buffer(size)
+    return buf.value if get_short_path(path, buf, size) else path
 
 
 def prebuilt_bench() -> pathlib.Path | None:
@@ -40,15 +55,18 @@ def run(bench: pathlib.Path, model: str, threads: int, ngl: int, metric: str, re
     is_prefill = metric.startswith("pp")
     shape = ["-p", metric[2:], "-n", "0"] if is_prefill else ["-p", "0", "-n", "128"]
     proc = subprocess.run(
-        [str(bench), "-m", model, "-t", str(threads), "-ngl", str(ngl), *shape, "-r", str(reps)],
-        capture_output=True, text=True, check=False, timeout=1800,
+        [str(bench), "-m", native_path(model), "-t", str(threads), "-ngl", str(ngl),
+         *shape, "-r", str(reps)],
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
+        check=False, timeout=1800,
     )
-    return labkit.bench_metric(proc.stdout + proc.stderr, metric)
+    return labkit.bench_metric((proc.stdout or "") + (proc.stderr or ""), metric)
 
 
 def version_of(binary: pathlib.Path) -> str:
-    proc = subprocess.run([str(binary), "--version"], capture_output=True, text=True, check=False)
-    text = (proc.stdout + proc.stderr).strip().splitlines()
+    proc = subprocess.run([str(binary), "--version"], capture_output=True, text=True,
+                          encoding="utf-8", errors="replace", check=False)
+    text = ((proc.stdout or "") + (proc.stderr or "")).strip().splitlines()
     return text[0] if text else "unknown"
 
 
